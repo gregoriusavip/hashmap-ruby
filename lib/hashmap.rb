@@ -2,6 +2,8 @@
 
 # HashMap with separate chaining collision handling
 class HashMap
+  attr_reader :length
+
   def initialize
     self.capacity = 16
     self.buckets = Array.new(capacity) { [] }
@@ -18,7 +20,7 @@ class HashMap
   end
 
   def get(key)
-    buckets[valid_index(key)].each { |node| return node[2] if node[0].eql?(key) }
+    buckets[valid_index(key)].each { |node| return node[1] if node[0].eql?(key) }
     nil
   end
 
@@ -92,7 +94,7 @@ class HashMap
   end
 
   def increase_bucket?
-    return unless (capacity * load_factor).ceil <= length + 1
+    return unless (capacity * load_factor).ceil <= length
 
     self.capacity *= 2
     new_buckets = Array.new(capacity) { [] }
@@ -100,5 +102,6 @@ class HashMap
     self.buckets = new_buckets
   end
 
-  attr_accessor :capacity, :buckets, :load_factor, :length
+  attr_writer :length
+  attr_accessor :capacity, :buckets, :load_factor
 end
