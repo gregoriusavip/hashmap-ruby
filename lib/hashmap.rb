@@ -10,6 +10,7 @@ class HashMap
   end
 
   def set(key, value)
+    increase_bucket?
     index = valid_index(key)
     buckets[index].each { |node| return node[1] = value if node[0].eql?(key) }
     self.length += 1
@@ -71,9 +72,9 @@ class HashMap
     hash_code
   end
 
-  def valid_index(key)
+  def valid_index(key, buckets_length = @buckets.length)
     index = hash(key) % capacity
-    raise IndexError if index.negative? || index >= @buckets.length
+    raise IndexError if index.negative? || index >= buckets_length
 
     index
   end
@@ -82,6 +83,21 @@ class HashMap
     buckets.each do |bucket|
       bucket.each { |node| yield(node[0], node[1]) unless node.empty? }
     end
+  end
+
+  def resize_helper(buckets, key, value)
+    index = valid_index(key, buckets.length)
+    buckets[index].each { |node| return node[1] = value if node[0].eql?(key) }
+    buckets[index].push([key, value])
+  end
+
+  def increase_bucket?
+    return unless (capacity * load_factor).ceil <= length + 1
+
+    self.capacity *= 2
+    new_buckets = Array.new(capacity) { [] }
+    traverse_buckets { |key, value| resize_helper(new_buckets, key, value) }
+    self.buckets = new_buckets
   end
 
   attr_accessor :capacity, :buckets, :load_factor, :length
