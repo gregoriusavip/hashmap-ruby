@@ -10,9 +10,10 @@ class HashMap
   end
 
   def set(key, value)
-    buckets[valid_index(key)].each { |node| return node[1] = value if node[0].eql?(key) }
+    index = valid_index(key)
+    buckets[index].each { |node| return node[1] = value if node[0].eql?(key) }
     self.length += 1
-    buckets[valid_index(key)].push([key, value])
+    buckets[index].push([key, value])
   end
 
   def get(key)
@@ -42,7 +43,21 @@ class HashMap
   end
 
   def keys
-    buckets.each { |bucket| }
+    keys = []
+    traverse_buckets { |key, _| keys << key }
+    keys
+  end
+
+  def values
+    values = []
+    traverse_buckets { |_, value| values << value }
+    values
+  end
+
+  def entries
+    key_val_pair = []
+    traverse_buckets { |key, value| key_val_pair << [key, value] }
+    key_val_pair
   end
 
   private
@@ -61,6 +76,12 @@ class HashMap
     raise IndexError if index.negative? || index >= @buckets.length
 
     index
+  end
+
+  def traverse_buckets
+    buckets.each do |bucket|
+      bucket.each { |node| yield(node[0], node[1]) unless node.empty? }
+    end
   end
 
   attr_accessor :capacity, :buckets, :load_factor, :length
